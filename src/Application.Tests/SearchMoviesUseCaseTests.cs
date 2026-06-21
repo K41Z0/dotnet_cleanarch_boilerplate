@@ -1,4 +1,3 @@
-using Application.DTOs;
 using Application.UseCases.SearchMovies;
 using Domain.Entities;
 using Domain.Interfaces;
@@ -9,7 +8,7 @@ namespace Application.Tests;
 public class SearchMoviesUseCaseTests
 {
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnMovies_WhenRepositoryReturnsData()
+    public async Task ExecuteAsync_ShouldReturnSuccess_WhenRepositoryReturnsData()
     {
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
@@ -27,12 +26,13 @@ public class SearchMoviesUseCaseTests
         var result = await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Single(result);
-        Assert.Equal("Batman Begins", result[0].Title);
+        Assert.True(result.IsSuccess);
+        Assert.Single(result.Value!);
+        Assert.Equal("Batman Begins", result.Value![0].Title);
     }
 
     [Fact]
-    public async Task ExecuteAsync_ShouldReturnEmptyList_WhenQueryIsEmpty()
+    public async Task ExecuteAsync_ShouldReturnFailure_WhenQueryIsEmpty()
     {
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
@@ -43,7 +43,7 @@ public class SearchMoviesUseCaseTests
         var result = await useCase.ExecuteAsync(query);
 
         // Assert
-        Assert.Empty(result);
-        mockRepository.Verify(r => r.SearchAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        Assert.False(result.IsSuccess);
+        Assert.Equal("Search query cannot be empty", result.Error);
     }
 }

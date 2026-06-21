@@ -25,7 +25,11 @@ if (app.Environment.IsDevelopment())
 app.MapGet("/movies/search", async (string q, ISearchMoviesUseCase useCase, CancellationToken ct) =>
 {
     var result = await useCase.ExecuteAsync(new SearchMoviesQuery(q), ct);
-    return Results.Ok(result);
+
+    if (!result.IsSuccess)
+        return Results.BadRequest(new { error = result.Error });
+
+    return Results.Ok(result.Value);
 })
 .WithName("SearchMovies")
 .WithOpenApi();
