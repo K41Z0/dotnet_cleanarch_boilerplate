@@ -1,0 +1,36 @@
+# Build results
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+*.user
+*.suo
+*.cache
+
+# IDE
+.vs/
+.idea/
+*.sln.docstates
+
+# NuGet
+packages/
+*.nupkg
+project.lock.json
+project.fragment.lock.json
+artifacts/
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Secrets
+.env
+*.pem
+*.key
+
+# Publish
+publish/
