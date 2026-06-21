@@ -12,9 +12,12 @@ public class SearchMoviesUseCase : ISearchMoviesUseCase
         _movieRepository = movieRepository;
     }
 
-    public async Task<List<MovieDto>> ExecuteAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<List<MovieDto>> ExecuteAsync(SearchMoviesQuery query, CancellationToken cancellationToken = default)
     {
-        var movies = await _movieRepository.SearchAsync(query, cancellationToken);
+        if (string.IsNullOrWhiteSpace(query.Query))
+            return new List<MovieDto>();
+
+        var movies = await _movieRepository.SearchAsync(query.Query, cancellationToken);
 
         return movies.Select(m => new MovieDto
         {

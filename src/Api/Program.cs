@@ -4,7 +4,6 @@ using Infrastructure.Clients;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services
 builder.Services.AddHttpClient<IMovieRepository, OMDbClient>(client =>
 {
     client.BaseAddress = new Uri("https://www.omdbapi.com/");
@@ -23,12 +22,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/movies/search", async (string query, ISearchMoviesUseCase useCase, CancellationToken ct) =>
+app.MapGet("/movies/search", async (string q, ISearchMoviesUseCase useCase, CancellationToken ct) =>
 {
-    if (string.IsNullOrWhiteSpace(query))
-        return Results.BadRequest("Query parameter is required");
-
-    var result = await useCase.ExecuteAsync(query, ct);
+    var result = await useCase.ExecuteAsync(new SearchMoviesQuery(q), ct);
     return Results.Ok(result);
 })
 .WithName("SearchMovies")

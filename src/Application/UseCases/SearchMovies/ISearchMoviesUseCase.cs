@@ -4,5 +4,5 @@ namespace Application.UseCases.SearchMovies;
 
 public interface ISearchMoviesUseCase
 {
-    Task<List<MovieDto>> ExecuteAsync(string query, CancellationToken cancellationToken = default);
+    Task<List<MovieDto>> ExecuteAsync(SearchMoviesQuery query, CancellationToken cancellationToken = default);
 }
