@@ -16,16 +16,32 @@ public class OMDbClient : IMovieRepository
         _apiKey = configuration["OMDb:ApiKey"] ?? throw new ArgumentNullException("OMDb:ApiKey is missing");
     }
 
-    public async Task<List<Movie>> SearchAsync(string query, CancellationToken cancellationToken = default)
+    public async Task<(List<Movie> Movies, int TotalResults)> SearchAsync(MovieSearchFilter filter, CancellationToken cancellationToken = default)
     {
-        var url = $"?apikey={_apiKey}&s={Uri.EscapeDataString(query)}&type=movie";
+        var queryParams = new List<string>
+        {
+            $"apikey={_apiKey}",
+            $"s={Uri.EscapeDataString(filter.Query)}",
+            "type=movie"
+        };
+
+        if (!string.IsNullOrWhiteSpace(filter.Type))
+            queryParams.Add($"type={filter.Type}");
+
+        if (!string.IsNullOrWhiteSpace(filter.Year))
+            queryParams.Add($"y={filter.Year}");
+
+        if (filter.Page > 1)
+            queryParams.Add($"page={filter.Page}");
+
+        var url = "?" + string.Join("&", queryParams);
 
         var response = await _httpClient.GetFromJsonAsync<OMDbSearchResponse>(url, cancellationToken);
 
-        if (response?.Search == null)
-            return new List<Movie>();
+        if (response?.Search == null || response.Response == "False")
+            return (new List<Movie>(), 0);
 
-        return response.Search.Select(item => new Movie
+        var movies = response.Search.Select(item => new Movie
         {
             ImdbId = item.imdbID,
             Title = item.Title,
@@ -33,10 +49,17 @@ public class OMDbClient : IMovieRepository
             Type = item.Type,
             Poster = item.Poster
         }).ToList();
+
+        int totalResults = int.TryParse(response.TotalResults, out var total) ? total : 0;
+
+        return (movies, totalResults);
     }
 
     private class OMDbSearchResponse
     {
+        public string Response { get; set; } = "False";
+        public string? Error { get; set; }
+        public string? TotalResults { get; set; }
         public List<OMDbMovieItem>? Search { get; set; }
     }
 

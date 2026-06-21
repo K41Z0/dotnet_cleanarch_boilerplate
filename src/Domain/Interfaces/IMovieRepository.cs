@@ -1,8 +1,9 @@
 using Domain.Entities;
+using Domain.Interfaces;
 
 namespace Domain.Interfaces;
 
 public interface IMovieRepository
 {
-    Task<List<Movie>> SearchAsync(string query, CancellationToken cancellationToken = default);
+    Task<(List<Movie> Movies, int TotalResults)> SearchAsync(MovieSearchFilter filter, CancellationToken cancellationToken = default);
 }

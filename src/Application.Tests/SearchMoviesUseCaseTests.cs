@@ -13,17 +13,17 @@ public class SearchMoviesUseCaseTests
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
         mockRepository
-            .Setup(r => r.SearchAsync("batman", It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<Movie>
+            .Setup(r => r.SearchAsync(It.IsAny<MovieSearchFilter>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((new List<Movie>
             {
                 new Movie { ImdbId = "tt0372784", Title = "Batman Begins", Year = "2005", Type = "movie", Poster = "N/A" }
-            });
+            }, 1));
 
         var useCase = new SearchMoviesUseCase(mockRepository.Object);
-        var query = new SearchMoviesQuery("batman");
+        var filter = new MovieSearchFilter { Query = "batman" };
 
         // Act
-        var result = await useCase.ExecuteAsync(query);
+        var result = await useCase.ExecuteAsync(filter);
 
         // Assert
         Assert.True(result.IsSuccess);
@@ -37,10 +37,10 @@ public class SearchMoviesUseCaseTests
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
         var useCase = new SearchMoviesUseCase(mockRepository.Object);
-        var query = new SearchMoviesQuery("");
+        var filter = new MovieSearchFilter { Query = "" };
 
         // Act
-        var result = await useCase.ExecuteAsync(query);
+        var result = await useCase.ExecuteAsync(filter);
 
         // Assert
         Assert.False(result.IsSuccess);

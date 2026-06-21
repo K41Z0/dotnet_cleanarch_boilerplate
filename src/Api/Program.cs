@@ -1,8 +1,22 @@
 using Application.UseCases.SearchMovies;
 using Domain.Interfaces;
 using Infrastructure.Clients;
+using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.WebHost.ConfigureKestrel(options =>
+{
+    if (builder.Environment.IsDevelopment())
+    {
+        options.ListenLocalhost(5162);
+    }
+    else
+    {
+        options.ListenLocalhost(5162);
+        options.ListenLocalhost(7209, listenOptions => listenOptions.UseHttps());
+    }
+});
 
 builder.Services.AddHttpClient<IMovieRepository, OMDbClient>(client =>
 {
@@ -22,9 +36,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.MapGet("/movies/search", async (string q, ISearchMoviesUseCase useCase, CancellationToken ct) =>
+app.MapGet("/movies/search", async (
+    [AsParameters] MovieSearchFilter filter,
+    ISearchMoviesUseCase useCase,
+    CancellationToken ct) =>
 {
-    var result = await useCase.ExecuteAsync(new SearchMoviesQuery(q), ct);
+    if (string.IsNullOrWhiteSpace(filter.Query))
+        return Results.BadRequest("Query parameter is required");
+
+    var result = await useCase.ExecuteAsync(filter, ct);
 
     if (!result.IsSuccess)
         return Results.BadRequest(new { error = result.Error });

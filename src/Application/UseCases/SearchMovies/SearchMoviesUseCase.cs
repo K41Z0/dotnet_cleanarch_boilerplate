@@ -13,14 +13,14 @@ public class SearchMoviesUseCase : ISearchMoviesUseCase
         _movieRepository = movieRepository;
     }
 
-    public async Task<Result<List<MovieDto>>> ExecuteAsync(SearchMoviesQuery query, CancellationToken cancellationToken = default)
+    public async Task<Result<List<MovieDto>>> ExecuteAsync(MovieSearchFilter filter, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(query.Query))
+        if (string.IsNullOrWhiteSpace(filter.Query))
             return Result<List<MovieDto>>.Failure("Search query cannot be empty");
 
         try
         {
-            var movies = await _movieRepository.SearchAsync(query.Query, cancellationToken);
+            var (movies, _) = await _movieRepository.SearchAsync(filter, cancellationToken);
 
             var dtos = movies.Select(m => new MovieDto
             {
