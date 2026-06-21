@@ -1,4 +1,4 @@
-using Application.UseCases.SearchMovies;
+using Application.UseCases.Movies;
 using Domain.Interfaces;
 using Infrastructure.Clients;
 using Microsoft.AspNetCore.Http;
@@ -37,21 +37,20 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/movies/search", async (
-    [AsParameters] MovieSearchFilter filter,
-    ISearchMoviesUseCase useCase,
-    CancellationToken ct) =>
-{
-    if (string.IsNullOrWhiteSpace(filter.Query))
-        return Results.BadRequest("Query parameter is required");
+        [AsParameters] MovieFilter filter,
+        ISearchMoviesUseCase searchMoviesUseCase,
+        CancellationToken ct) =>
+    {
+        if (string.IsNullOrWhiteSpace(filter.Text))
+            return Results.BadRequest("Query parameter is required");
 
-    var result = await useCase.ExecuteAsync(filter, ct);
+        var result = await searchMoviesUseCase.ExecuteAsync(filter, ct);
 
-    if (!result.IsSuccess)
-        return Results.BadRequest(new { error = result.Error });
+        if (!result.IsSuccess)
+            return Results.BadRequest(new { error = result.Error });
 
-    return Results.Ok(result.Value);
-})
-.WithName("SearchMovies")
-.WithOpenApi();
+        return Results.Ok(result.Value);
+    })
+    .WithName("SearchMovies");
 
 app.Run();

@@ -5,26 +5,20 @@ using Microsoft.Extensions.Configuration;
 
 namespace Infrastructure.Clients;
 
-public class OMDbClient : IMovieRepository
+public class OMDbClient(HttpClient httpClient, IConfiguration configuration) : IMovieRepository
 {
-    private readonly HttpClient _httpClient;
-    private readonly string _apiKey;
+    private readonly string _apiKey = configuration["OMDb:ApiKey"] ?? throw new ArgumentNullException("OMDb:ApiKey is missing");
 
-    public OMDbClient(HttpClient httpClient, IConfiguration configuration)
-    {
-        _httpClient = httpClient;
-        _apiKey = configuration["OMDb:ApiKey"] ?? throw new ArgumentNullException("OMDb:ApiKey is missing");
-    }
-
-    public async Task<(List<Movie> Movies, int TotalResults)> SearchAsync(MovieSearchFilter filter, CancellationToken cancellationToken = default)
+    public async Task<(List<Movie> Movies, int TotalResults)> SearchAsync(MovieFilter filter, CancellationToken cancellationToken = default)
     {
         var queryParams = new List<string>
         {
             $"apikey={_apiKey}",
-            $"s={Uri.EscapeDataString(filter.Query)}",
-            "type=movie"
         };
-
+        
+        if (!string.IsNullOrWhiteSpace(filter.Text))
+            queryParams.Add($"s={Uri.EscapeDataString(filter.Text)}");
+        
         if (!string.IsNullOrWhiteSpace(filter.Type))
             queryParams.Add($"type={filter.Type}");
 
@@ -36,7 +30,7 @@ public class OMDbClient : IMovieRepository
 
         var url = "?" + string.Join("&", queryParams);
 
-        var response = await _httpClient.GetFromJsonAsync<OMDbSearchResponse>(url, cancellationToken);
+        var response = await httpClient.GetFromJsonAsync<OMDbSearchResponse>(url, cancellationToken);
 
         if (response?.Search == null || response.Response == "False")
             return (new List<Movie>(), 0);
@@ -54,21 +48,21 @@ public class OMDbClient : IMovieRepository
 
         return (movies, totalResults);
     }
+}
 
-    private class OMDbSearchResponse
-    {
-        public string Response { get; set; } = "False";
-        public string? Error { get; set; }
-        public string? TotalResults { get; set; }
-        public List<OMDbMovieItem>? Search { get; set; }
-    }
+file sealed class OMDbSearchResponse
+{
+    public string Response { get; set; } = "False";
+    public string? Error { get; set; }
+    public string? TotalResults { get; set; }
+    public List<OMDbMovieItem>? Search { get; set; }
+}
 
-    private class OMDbMovieItem
-    {
-        public string imdbID { get; set; } = string.Empty;
-        public string Title { get; set; } = string.Empty;
-        public string Year { get; set; } = string.Empty;
-        public string Type { get; set; } = string.Empty;
-        public string Poster { get; set; } = string.Empty;
-    }
+file sealed  class OMDbMovieItem
+{
+    public string imdbID { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
+    public string Year { get; set; } = string.Empty;
+    public string Type { get; set; } = string.Empty;
+    public string Poster { get; set; } = string.Empty;
 }

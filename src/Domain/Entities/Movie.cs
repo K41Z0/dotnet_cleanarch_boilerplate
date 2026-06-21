@@ -1,6 +1,8 @@
+using Domain.Common;
+
 namespace Domain.Entities;
 
-public class Movie
+public class Movie : Entity
 {
     public string ImdbId { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;

@@ -1,4 +1,4 @@
-using Application.UseCases.SearchMovies;
+using Application.UseCases.Movies;
 using Domain.Entities;
 using Domain.Interfaces;
 using Moq;
@@ -13,14 +13,14 @@ public class SearchMoviesUseCaseTests
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
         mockRepository
-            .Setup(r => r.SearchAsync(It.IsAny<MovieSearchFilter>(), It.IsAny<CancellationToken>()))
+            .Setup(r => r.SearchAsync(It.IsAny<MovieFilter>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((new List<Movie>
             {
                 new Movie { ImdbId = "tt0372784", Title = "Batman Begins", Year = "2005", Type = "movie", Poster = "N/A" }
             }, 1));
 
         var useCase = new SearchMoviesUseCase(mockRepository.Object);
-        var filter = new MovieSearchFilter { Query = "batman" };
+        var filter = new MovieFilter { Text = "batman" };
 
         // Act
         var result = await useCase.ExecuteAsync(filter);
@@ -37,7 +37,7 @@ public class SearchMoviesUseCaseTests
         // Arrange
         var mockRepository = new Mock<IMovieRepository>();
         var useCase = new SearchMoviesUseCase(mockRepository.Object);
-        var filter = new MovieSearchFilter { Query = "" };
+        var filter = new MovieFilter { Text = "" };
 
         // Act
         var result = await useCase.ExecuteAsync(filter);
