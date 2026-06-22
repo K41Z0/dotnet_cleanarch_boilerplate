@@ -6,7 +6,7 @@ namespace Application.UseCases.Movies;
 
 public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMoviesUseCase
 {
-    public async Task<Result<List<MovieDto>>> ExecuteAsync(MovieFilter filter, CancellationToken cancellationToken = default)
+    public async Task<Result<PagedList<MovieDto>>> ExecuteAsync(MovieFilter filter, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -26,11 +26,11 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
                 Poster = m.Poster
             }).ToList();
 
-            return Result<List<MovieDto>>.Success(result);
+            return Result<PagedList<MovieDto>>.Success(new PagedList<MovieDto> {Items = result});
         }
         catch (Exception ex)
         {
-            return Result<List<MovieDto>>.Failure(ex.Message);
+            return Result<PagedList<MovieDto>>.Failure(ex.Message);
         }
     }
 }
