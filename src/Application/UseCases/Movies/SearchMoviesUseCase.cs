@@ -14,7 +14,7 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
                 filter.Text ?? string.Empty,
                 filter.Type,
                 filter.Year,
-                filter.Page,
+                filter.Page ?? 1,
                 cancellationToken);
 
             var dtos = movies.Select(m => new MovieDto
@@ -27,7 +27,7 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
             }).ToList();
 
             const int pageSize = 10;
-            var pageNumber = filter.Page > 0 ? filter.Page : 1;
+            var pageNumber = filter.Page ?? 1;
 
             var pagedItems = dtos
                 .Skip((pageNumber - 1) * pageSize)
