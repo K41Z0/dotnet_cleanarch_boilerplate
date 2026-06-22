@@ -6,18 +6,18 @@ namespace Application.UseCases.Movies;
 
 public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMoviesUseCase
 {
-    public async Task<Result<PagedList<MovieDto>>> ExecuteAsync(MovieFilter filter, CancellationToken cancellationToken = default)
+    public async Task<Result<Page<MovieDto>>> ExecuteAsync(MovieFilter filter, CancellationToken cancellationToken = default)
     {
         try
         {
-            var (movies, _, _) = await movieRepository.SearchAsync(
-                filter.Text ?? string.Empty, 
-                filter.Type, 
-                filter.Year, 
-                filter.Page, 
+            var (movies, totalResults, _) = await movieRepository.SearchAsync(
+                filter.Text ?? string.Empty,
+                filter.Type,
+                filter.Year,
+                filter.Page,
                 cancellationToken);
 
-            var result = movies.Select(m => new MovieDto
+            var dtos = movies.Select(m => new MovieDto
             {
                 ImdbId = m.ImdbId,
                 Title = m.Title,
@@ -26,11 +26,27 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
                 Poster = m.Poster
             }).ToList();
 
-            return Result<PagedList<MovieDto>>.Success(new PagedList<MovieDto> {Items = result});
+            const int pageSize = 10;
+            var pageNumber = filter.Page > 0 ? filter.Page : 1;
+
+            var pagedItems = dtos
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            var page = new Page<MovieDto>
+            {
+                Items = pagedItems,
+                Number = pageNumber,
+                Size = pageSize,
+                TotalResults = totalResults
+            };
+
+            return Result<Page<MovieDto>>.Success(page);
         }
         catch (Exception ex)
         {
-            return Result<PagedList<MovieDto>>.Failure(ex.Message);
+            return Result<Page<MovieDto>>.Failure(ex.Message);
         }
     }
 }
