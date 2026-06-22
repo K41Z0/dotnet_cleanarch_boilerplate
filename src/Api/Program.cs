@@ -1,3 +1,4 @@
+using Application.DTOs;
 using Application.UseCases.Movies;
 using Domain.Interfaces;
 using Infrastructure.Clients;
@@ -37,20 +38,21 @@ if (app.Environment.IsDevelopment())
 }
 
 app.MapGet("/movies/search", async (
-        [AsParameters] MovieFilter filter,
-        ISearchMoviesUseCase searchMoviesUseCase,
-        CancellationToken ct) =>
-    {
-        if (string.IsNullOrWhiteSpace(filter.Text))
-            return Results.BadRequest("Query parameter is required");
+    [AsParameters] MovieFilter filter,
+    ISearchMoviesUseCase useCase,
+    CancellationToken ct) =>
+{
+    if (string.IsNullOrWhiteSpace(filter.Text))
+        return Results.BadRequest("Query parameter is required");
 
-        var result = await searchMoviesUseCase.ExecuteAsync(filter, ct);
+    var result = await useCase.ExecuteAsync(filter, ct);
 
-        if (!result.IsSuccess)
-            return Results.BadRequest(new { error = result.Error });
+    if (!result.IsSuccess)
+        return Results.BadRequest(new { error = result.Error });
 
-        return Results.Ok(result.Value);
-    })
-    .WithName("SearchMovies");
+    return Results.Ok(result.Value);
+})
+.WithName("SearchMovies")
+.WithOpenApi();
 
 app.Run();

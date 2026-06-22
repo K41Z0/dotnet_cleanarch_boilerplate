@@ -10,7 +10,12 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
     {
         try
         {
-            var (movies, _) = await movieRepository.SearchAsync(filter, cancellationToken);
+            var (movies, _, _) = await movieRepository.SearchAsync(
+                filter.Text ?? string.Empty, 
+                filter.Type, 
+                filter.Year, 
+                filter.Page, 
+                cancellationToken);
 
             var result = movies.Select(m => new MovieDto
             {
@@ -25,7 +30,7 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
         }
         catch (Exception ex)
         {
-            return Result<List<MovieDto>>.Failure($"Failed to search movies: {ex.Message}");
+            return Result<List<MovieDto>>.Failure(ex.Message);
         }
     }
 }
