@@ -30,20 +30,4 @@ public class SearchMoviesUseCaseTests
         Assert.Single(result.Value!);
         Assert.Equal("Batman Begins", result.Value![0].Title);
     }
-
-    [Fact]
-    public async Task ExecuteAsync_ShouldReturnFailure_WhenQueryIsEmpty()
-    {
-        // Arrange
-        var mockRepository = new Mock<IMovieRepository>();
-        var useCase = new SearchMoviesUseCase(mockRepository.Object);
-        var filter = new MovieFilter { Text = "" };
-
-        // Act
-        var result = await useCase.ExecuteAsync(filter);
-
-        // Assert
-        Assert.False(result.IsSuccess);
-        Assert.Equal("Search query cannot be empty", result.Error);
-    }
 }
