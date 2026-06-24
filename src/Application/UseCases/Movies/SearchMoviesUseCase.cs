@@ -10,14 +10,14 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
     {
         try
         {
-            var (movies, totalResults, _) = await movieRepository.SearchAsync(
-                filter.Text ?? string.Empty,
-                filter.Type,
-                filter.Year,
-                filter.Page ?? 1,
-                cancellationToken);
+            var result = await movieRepository.SearchAsync(filter, cancellationToken);
 
-            var dtos = movies.Select(m => new MovieDto
+            if (!result.IsSuccess || result.Value == null)
+            {
+                return Result<Page<MovieDto>>.Failure(result.Error ?? "Failed to retrieve movies");
+            }
+
+            var dtos = result.Value.Items.Select(m => new MovieDto
             {
                 ImdbId = m.ImdbId,
                 Title = m.Title,
@@ -26,20 +26,12 @@ public class SearchMoviesUseCase(IMovieRepository movieRepository) : ISearchMovi
                 Poster = m.Poster
             }).ToList();
 
-            const int pageSize = 10;
-            var pageNumber = filter.Page ?? 1;
-
-            var pagedItems = dtos
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .ToList();
-
             var page = new Page<MovieDto>
             {
-                Items = pagedItems,
-                Number = pageNumber,
-                Size = pageSize,
-                TotalResults = totalResults
+                Items = dtos,
+                Number = result.Value.Number,
+                Size = result.Value.Size,
+                TotalResults = result.Value.TotalResults
             };
 
             return Result<Page<MovieDto>>.Success(page);

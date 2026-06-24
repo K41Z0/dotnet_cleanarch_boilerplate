@@ -1,7 +1,7 @@
 using Application.DTOs;
 using Application.UseCases.Movies;
 using Domain.Interfaces;
-using Infrastructure.Clients;
+using Infrastructure.Repositories;
 using Microsoft.AspNetCore.Http;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,7 +19,7 @@ builder.WebHost.ConfigureKestrel(options =>
     }
 });
 
-builder.Services.AddHttpClient<IMovieRepository, OMDbClient>(client =>
+builder.Services.AddHttpClient<IMovieRepository, MovieRepository>(client =>
 {
     client.BaseAddress = new Uri("https://www.omdbapi.com/");
 });

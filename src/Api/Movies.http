@@ -1,28 +1,28 @@
-### 1. Базовый поиск
+### 1. Basic search by movie name
 GET {{Api_Host}}/movies/search?Text=batman
 Accept: application/json
 
-### 2. Поиск с годом
+### 2. Search with year and movie name
 GET {{Api_Host}}/movies/search?Text=batman&Year=2005
 Accept: application/json
 
-### 3. Поиск только сериалов
+### 3. Search with movie name and type
 GET {{Api_Host}}/movies/search?Text=game&Type=series
 Accept: application/json
 
-### 4. Пагинация — страница 1
+### 4. Search with page 1
 GET {{Api_Host}}/movies/search?Text=batman&Page=1
 Accept: application/json
 
-### 5. Пагинация — страница 2
+### 5. Search with page 2
 GET {{Api_Host}}/movies/search?Text=batman&Page=2
 Accept: application/json
 
-### 6. Полный пример
+### 6. Full search
 GET {{Api_Host}}/movies/search?Text=inception&Year=2010&Type=movie&Page=1
 Accept: application/json
 
-### 7. Ошибка — пустой запрос (должен вернуть ошибку)
+### 7. Exception
 GET {{Api_Host}}/movies/search?Text=
 Accept: application/json
 
